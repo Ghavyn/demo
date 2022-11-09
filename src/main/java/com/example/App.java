@@ -24,7 +24,7 @@ import javafx.stage.Stage;
 public class App extends Application {
 
     private static Scene scene;
-    ArrayList<ImageView> tiles = new ArrayList<ImageView>();
+    ArrayList<Group> gates = new ArrayList<Group>(); //Each gate is a group containting the image, as well as wire terminals for connecting gates
 
     @Override
     public void start(Stage stage) throws IOException, URISyntaxException {
@@ -74,9 +74,9 @@ public class App extends Application {
 
         test.getChildren().add(imageView2);
         test.getChildren().add(imageView3);
-        root.getChildren().add(test);
+        //root.getChildren().add(test);
         
-
+        createLogicPiece("and.jpg");
 
         //GaussianBlur g = new GaussianBlur();  
         //g.setRadius(5);  
@@ -93,30 +93,38 @@ public class App extends Application {
         rotate.play(); 
         */
         
-        for(Node element : tiles) {
+        for(Node element : gates) {
             root.getChildren().add(element);
         }
     }
 
-    private void createTile(String name) {
-        Image image = new Image(getClass().getResourceAsStream(name));
-        ImageView imageView = new ImageView(image);
-        imageView.setX(0);
-        imageView.setY(0);
-        imageView.setFitHeight(50);
-        imageView.setFitWidth(100);
-        makeImageDragable(imageView);
-        tiles.add(imageView);
+    private void createLogicPiece(String name) { //Name must be the filename of the image, otherwise a crash will ocurr with a really long and cryptic error message
+        try {
+            Image image = new Image(getClass().getResourceAsStream(name));
+            ImageView imageView = new ImageView(image);
+            imageView.setX(0);
+            imageView.setY(0);
+            imageView.setFitHeight(50);
+            imageView.setFitWidth(100);
+            makeImageDragable(imageView); //Allows clicking and dragging to translate (change the tranlsation x and y, which apply after other positioning) to the group
+
+            Group gateGroup = new Group();
+            gateGroup.getChildren().add(imageView);
+            gates.add(gateGroup);
+
+        } catch(Exception e) {
+            System.out.println("Error: Invalid filename for gate");
+        }
     }
 
     private void makeImageDragable(ImageView n) {
-        final Delta dragDelta = new Delta();
+        final Delta dragDelta = new Delta(); //This sticks around as long as the gate does despite being declared in this function
 
         n.setOnMousePressed(new EventHandler<MouseEvent>() {
             @Override public void handle(MouseEvent event) {
                 n.setMouseTransparent(true);
-                dragDelta.x = n.getParent().getTranslateX() - event.getSceneX(); //n.getLayoutX() - event.getSceneX();
-                dragDelta.y = n.getParent().getTranslateY() - event.getSceneY(); //n.getLayoutY() - event.getSceneY();
+                dragDelta.x = n.getParent().getTranslateX() - event.getSceneX();
+                dragDelta.y = n.getParent().getTranslateY() - event.getSceneY();
                 //n.setCursor(Cursor.MOVE);
                 event.setDragDetect(true);
             }
@@ -125,8 +133,8 @@ public class App extends Application {
         n.setOnMouseReleased(new EventHandler<MouseEvent>() {
             @Override public void handle(MouseEvent event) {
                 n.setMouseTransparent(false);
-                n.setLayoutX(20 * Math.round(n.getLayoutX()/20));
-                n.setLayoutY(20 * Math.round(n.getLayoutY()/20));
+                n.getParent().setTranslateX(20 * Math.round(n.getParent().getTranslateX()/20));
+                n.getParent().setTranslateY(20 * Math.round(n.getParent().getTranslateY()/20));
                 System.out.println("Mouse released");
             }
         });
@@ -142,8 +150,6 @@ public class App extends Application {
                 System.out.println("X: " + n.getLayoutX() + ", Y: " + n.getLayoutY());
                 n.getParent().setTranslateX(event.getSceneX() + dragDelta.x);
                 n.getParent().setTranslateY(event.getSceneY() + dragDelta.y);
-                //n.setLayoutX(event.getSceneX() + dragDelta.x);
-                //n.setLayoutY(event.getSceneY() + dragDelta.y);
                 event.setDragDetect(false);
             }
         });
