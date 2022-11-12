@@ -16,20 +16,19 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
+import javafx.scene.shape.Line;
 import javafx.stage.Stage;
 
-/**
- * JavaFX App
- */
 public class App extends Application {
 
     private static Scene scene;
     ArrayList<Group> gates = new ArrayList<Group>(); //Each gate is a group containting the image, as well as wire terminals for connecting gates
+    Group root = new Group();
 
     @Override
     public void start(Stage stage) throws IOException, URISyntaxException {
         
-        Group root = new Group();
         Image bg = new Image(getClass().getResourceAsStream("bg.png"));
         ImageView bgView = new ImageView(bg);
         bgView.setX(0);
@@ -37,61 +36,15 @@ public class App extends Application {
         root.getChildren().add(bgView);
 
         scene = new Scene(root,640,480,Color.WHITE);
-
         scene.getStylesheets().add(getClass().getResource("styles.css").toExternalForm());
-        
         stage.setScene(scene);
         stage.setTitle("Logician's Folly");
         stage.show();
-
-
-        //createTile("and.jpg"); //Tiles are automatically added to the tiles list
-        //createTile("or.jpg");
-        //createTile("and.jpg");
-        
-        //tiles.get(0).setX(200);
-
-        
-        Image image2 = new Image(getClass().getResourceAsStream("and.jpg"));
-        ImageView imageView2 = new ImageView(image2);
-        imageView2.setX(100);
-        imageView2.setY(0);
-        imageView2.setFitHeight(50);
-        imageView2.setFitWidth(100);
-        makeImageDragable(imageView2);
-
-        Image image3 = new Image(getClass().getResourceAsStream("and.jpg"));
-        ImageView imageView3 = new ImageView(image3);
-        imageView3.setX(300);
-        imageView3.setY(0);
-        imageView3.setFitHeight(50);
-        imageView3.setFitWidth(100);
-        makeImageDragable(imageView3);
-
-        Group test = new Group();
-
-        //test.getStyleClass().add("pane");
-
-        test.getChildren().add(imageView2);
-        test.getChildren().add(imageView3);
-        //root.getChildren().add(test);
         
         createLogicPiece("and.jpg");
-
-        //GaussianBlur g = new GaussianBlur();  
-        //g.setRadius(5);  
-        //rect.setEffect(g);  
-        
-        /*
-        RotateTransition rotate = new RotateTransition();
-        rotate.setAxis(Rotate.Z_AXIS);    
-        rotate.setByAngle(360);    
-        rotate.setCycleCount(500);   
-        rotate.setDuration(Duration.millis(1000));  
-        rotate.setAutoReverse(true);  
-        rotate.setNode(tiles.get(0));
-        rotate.play(); 
-        */
+        createLogicPiece("or.jpg");
+        gates.get(1).setTranslateX(200.0); //This is an example of how to set gate properties from this scope. This sets the translate of the group btw, children must be accessed by index (the order in which they were added to the group)
+        gates.get(1).setTranslateY(100.0);
         
         for(Node element : gates) {
             root.getChildren().add(element);
@@ -108,8 +61,20 @@ public class App extends Application {
             imageView.setFitWidth(100);
             makeImageDragable(imageView); //Allows clicking and dragging to translate (change the tranlsation x and y, which apply after other positioning) to the group
 
+            Circle input1 = new Circle();
+            input1.setLayoutX(10);
+            input1.setLayoutY(15);
+            input1.setRadius(5);
+            
+            makeWirable(input1);
+
+            Circle input2 = new Circle();
+            input2.setLayoutX(10);
+            input2.setLayoutY(35);
+            input2.setRadius(5);
+
             Group gateGroup = new Group();
-            gateGroup.getChildren().add(imageView);
+            gateGroup.getChildren().addAll(imageView, input1, input2);
             gates.add(gateGroup);
 
         } catch(Exception e) {
@@ -141,15 +106,54 @@ public class App extends Application {
         
         n.setOnMouseEntered(new EventHandler<MouseEvent>() {
             @Override public void handle(MouseEvent event) {
-                n.setCursor(Cursor.OPEN_HAND);
+                //n.setCursor(Cursor.OPEN_HAND);
             }
         });
         
         n.setOnMouseDragged(new EventHandler<MouseEvent>() {
             @Override public void handle(MouseEvent event) {
-                System.out.println("X: " + n.getLayoutX() + ", Y: " + n.getLayoutY());
                 n.getParent().setTranslateX(event.getSceneX() + dragDelta.x);
                 n.getParent().setTranslateY(event.getSceneY() + dragDelta.y);
+                event.setDragDetect(false);
+            }
+        });
+    }
+
+    private void makeWirable(Circle n) {
+        final Line wire = new Line();
+
+        n.setOnMousePressed(new EventHandler<MouseEvent>() {
+            @Override public void handle(MouseEvent event) {
+                n.setMouseTransparent(true);
+                wire.setStartX(n.getLayoutX() + n.getParent().getTranslateX());
+                wire.setStartY(n.getLayoutY() + n.getParent().getTranslateY());
+                wire.setEndX(n.getLayoutX() + n.getParent().getTranslateX());
+                wire.setEndY(n.getLayoutY() + n.getParent().getTranslateY());
+                root.getChildren().add(wire);
+                event.setDragDetect(true);
+            }
+        });
+        
+        n.setOnMouseReleased(new EventHandler<MouseEvent>() {
+            @Override public void handle(MouseEvent event) {
+                n.setMouseTransparent(false);
+                root.getChildren().remove(wire);
+                //The following 2 lines are used to re-render the scene, because a bug in javafx causes the wire preview to still render after it's removed
+                n.toBack();
+                n.toFront();
+            }
+        });
+        
+        n.setOnMouseEntered(new EventHandler<MouseEvent>() {@Override public void handle(MouseEvent event) {
+                n.setFill(Color.GREEN);}});
+
+        n.setOnMouseExited(new EventHandler<MouseEvent>() {@Override public void handle(MouseEvent event) { 
+            n.setFill(Color.BLACK);}});
+        
+        n.setOnMouseDragged(new EventHandler<MouseEvent>() {
+            @Override public void handle(MouseEvent event) {
+                wire.setEndX(event.getSceneX());
+                wire.setEndY(event.getSceneY());
                 event.setDragDetect(false);
             }
         });
