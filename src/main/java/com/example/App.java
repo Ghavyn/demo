@@ -10,13 +10,13 @@ import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
 public class App extends Application {
-
-    private static Scene scene;
-    ArrayList<LogicGate> gates = new ArrayList<LogicGate>(); //Each gate is a group containting the image, as well as wire terminals for connecting gates
-    Group root = new Group();
-
     public static final int APPWIDTH = 1920;
     public static final int APPHEIGHT = 1080;
+
+    private static Scene scene;
+    private static ArrayList<LogicGate> gates = new ArrayList<LogicGate>(); //Each gate is a group containting the image, as well as wire terminals for connecting gates
+    private static Group root = new Group();
+    private static WirePreviewPane previewPane = new WirePreviewPane(root, APPWIDTH, APPHEIGHT);
 
     @Override
     public void start(Stage stage) {
@@ -30,10 +30,17 @@ public class App extends Application {
         stage.setOpacity(0.0); //The opacity toggling is to prevent the window for flashbanging white for a few frames while loading in
         stage.show();
         stage.setOpacity(1.0);
+
+        root.getChildren().add(previewPane);
         
         gates.add(new LogicGate(root, "andgate.png"));
+        gates.add(new LogicGate(root, "orgate.png"));
+        gates.add(new LogicGate(root, "norgate.png"));
         gates.get(0).setTranslateX(200.0); 
-        //This is an example of how to set gate properties from this scope. This sets the translate of the group btw, children must be accessed by index (the order in which they were added to the group)
+    }
+
+    public static Group getRoot() { //Public variables don't work across classes for some reason, so I use this instead
+        return root;
     }
 
     public static void main(String[] args) {
