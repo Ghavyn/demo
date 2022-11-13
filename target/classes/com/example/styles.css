@@ -1,3 +1,7 @@
-.pane {
-    -fx-background-color: #8fbc8f;
+#pane{
+    --fx-background-color: #333333;
+    --fx-background-image: url("bg3.png");
+    --fx-background-repeat: stretch;   
+    --fx-background-size: 900 506;
+    --fx-background-position: center center;
 }
