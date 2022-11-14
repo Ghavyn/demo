@@ -42,7 +42,10 @@ public class App extends Application {
         gates.add(new LogicGate(root, "andgate.png"));
         gates.add(new LogicGate(root, "orgate.png"));
         gates.add(new LogicGate(root, "norgate.png"));
-        gates.get(0).setTranslateX(200.0); 
+        gates.add(new LogicGate(root, "andgate.png"));
+        gates.add(new LogicGate(root, "orgate.png"));
+        gates.add(new LogicGate(root, "norgate.png"));
+        //gates.get(0).setTranslateX(200.0); 
     }
 
     public static Group getRoot() { //Public variables don't work across classes for some reason, so I use this instead

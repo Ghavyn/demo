@@ -1,13 +1,8 @@
 package com.example;
 
-import javafx.scene.Cursor;
 import javafx.scene.Group;
-import javafx.scene.Node;
-import javafx.event.EventHandler;
 import javafx.scene.input.ClipboardContent;
-import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
@@ -35,7 +30,7 @@ public class WireNode extends Circle{
         makeWirable(root, this);
 
         this.wire.setFill(Color.TRANSPARENT);
-        this.wire.setStroke(Color.WHITE);
+        this.wire.setStroke(Color.GREEN);
         this.wire.setStrokeWidth(2);
         this.wire.getStrokeDashArray().addAll(5d, 5d);
         
@@ -105,7 +100,6 @@ public class WireNode extends Circle{
             }
             self.clearWire();
             event.consume();
-            
         });
 
         //This performs the import task of communicating to the drag gestrure that the node can be dragged onto
@@ -130,7 +124,7 @@ public class WireNode extends Circle{
         self.setOnDragEntered(event -> { //Target
             if (event.getGestureSource() != self && event.getDragboard().hasString()) {
                 if(event.getDragboard().getString() == "output" && self.type != "output" || event.getDragboard().getString() != "output" && self.type == "output") {
-                    self.setFill(Color.WHITE);
+                    self.setFill(Color.LIGHTGREEN);
                 }
             }
             event.consume();
