@@ -96,14 +96,4 @@ public class LogicGate extends Group{
     public void updateWires(WireNode node, WireNode connectedNode) { //The gate whose output(s) connect to a wire are responsible for drawing it
         node.drawWire(connectedNode.getX(),connectedNode.getY());
     }
-
-    public void nodesToFront() {
-        inputs.forEach(node -> {
-            System.out.println("here");
-            node.toFront();
-        });
-        outputs.forEach(node -> {
-            node.toFront();
-        });
-    }
 }

@@ -1,6 +1,7 @@
 package com.example;
 
 import javafx.scene.Group;
+import javafx.scene.Node;
 import javafx.event.EventHandler;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.DragEvent;
@@ -55,6 +56,7 @@ public class WireNode extends Circle{
     public void drawWire(double x, double y) {
         if(!wireIsVisible) {
             App.getRoot().getChildren().add(wire);
+            wire.toBack();
             wireIsVisible = true;
         }
 
@@ -81,6 +83,14 @@ public class WireNode extends Circle{
 
     private void makeWirable(Group root, WireNode self) {
 
+        self.setOnMouseEntered(new EventHandler<MouseEvent>() { public void handle(MouseEvent event) {
+            self.setFill(Color.LIGHTGREEN);
+        }});
+
+        self.setOnMouseExited(new EventHandler<MouseEvent>() { public void handle(MouseEvent event) {
+            self.setFill(Color.GREEN);
+        }});
+
         self.setOnDragDetected(new EventHandler<MouseEvent>() { public void handle(MouseEvent event) { //Drag started
             //Communicates whether the initiating node is an input or output node with dragboard
             Dragboard db = self.startDragAndDrop(TransferMode.MOVE);
@@ -98,11 +108,18 @@ public class WireNode extends Circle{
             
         }});
 
+        //This performs the import task of communicating to the drag gestrure that the node can be dragged onto
         self.setOnDragOver(new EventHandler<DragEvent>() { public void handle(DragEvent event) { //Target (This executes on the target node rather than the originating node)
-            if (event.getGestureSource() != self && event.getDragboard().hasString()) {
+            if (event.getGestureSource() != self && 
+            ((WireNode) event.getGestureSource()).getParent() != self.getParent() && 
+            event.getDragboard().hasString() &&
+            self.connectedNode == null) {
                 if(event.getDragboard().getString() == "output" && self.type != "output" || event.getDragboard().getString() != "output" && self.type == "output") { //Check for heterosexuality
                     event.acceptTransferModes(TransferMode.MOVE);
                 }
+            }
+            if (event.getDragboard().hasString()) { //Allows wire preview over node
+                ((WireNode) event.getGestureSource()).drawWire(event.getSceneX(),event.getSceneY());
             }
             event.consume();
         }});
@@ -111,7 +128,7 @@ public class WireNode extends Circle{
         self.setOnDragEntered(new EventHandler<DragEvent>() { public void handle(DragEvent event) { //Target
             if (event.getGestureSource() != self && event.getDragboard().hasString()) {
                 if(event.getDragboard().getString() == "output" && self.type != "output" || event.getDragboard().getString() != "output" && self.type == "output") {
-                    self.setFill(Color.LIGHTGREEN);
+                    self.setFill(Color.WHITE);
                 }
             }
             event.consume();
@@ -130,6 +147,15 @@ public class WireNode extends Circle{
                 success = true;
                 ((WireNode) event.getGestureSource()).setConnectedNode(self);
                 self.setConnectedNode((WireNode) event.getGestureSource());
+                
+                //Refresh wire so it snaps to node
+                if(db.getString() == "output") {
+                    ((WireNode) event.getGestureSource()).setWireEndPosition(self.getX(), self.getY());
+                } else {
+                    //System.out.println(self.getX());
+                    self.setWireStartPosition(self.getX(), self.getY());
+                    self.drawWire(((WireNode) event.getGestureSource()).getX(),((WireNode) event.getGestureSource()).getY());
+                }
             }
             event.setDropCompleted(success); //lets the source know whether the string was successfully transferred and used
             event.consume();
@@ -137,14 +163,18 @@ public class WireNode extends Circle{
 
         self.setOnDragDone(new EventHandler<DragEvent>() { public void handle(DragEvent event) { //Source
             if (event.getTransferMode() == TransferMode.MOVE) { //Checks if the drop was successful
-                //self.setText("");
+
             } else {
-                //Remove wire preview on failure to connect RENDERING GLITCH NEEDS TO BE FIXED
+                //Remove wire preview on failure to connect
                 if(connectedNode != null) {
                     connectedNode.clearWire();
                     connectedNode.nullConnectedNode();
                 }
                 self.clearWire();
+            }
+            if(self.type == "input") {
+                App.getRoot().getChildren().remove(self.wire);
+                self.wireIsVisible = false;
             }
             event.consume();
         }});
@@ -163,6 +193,17 @@ public class WireNode extends Circle{
 
     public double getY() {
         return(this.getLayoutY() + this.getParent().getTranslateY());
+    }
+
+    public void setWireEndPosition(double x, double y) {
+        this.wire.setEndX(x);
+        this.wire.setEndY(y);
+    }
+
+    public void setWireStartPosition(double x, double y) {
+        this.wire.setStartX(x);
+        this.wire.setStartY(y);
+        App.forceRefresh();
     }
 
     //Each node points to the node it's wired to, these connections run both ways
