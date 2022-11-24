@@ -16,9 +16,21 @@ public class App extends Application {
 
     private static Scene scene;
     private static ArrayList<LogicGate> gates = new ArrayList<LogicGate>(); //Each gate is a group containting the image, as well as wire terminals for connecting gates
-    private static Group root = new Group();
+    
+    public static Group root = new Group();
+    
     private static WirePreviewPane previewPane = new WirePreviewPane(root, APPWIDTH, APPHEIGHT);
     private static Rectangle forceRefresher = new Rectangle(0,0,0,0);
+
+    public enum GateType {
+        OR,
+        AND,
+        NOT,
+        SPLITTER,
+        NOR,
+        NAND,
+        XOR
+    }
 
     @Override
     public void start(Stage stage) {
@@ -39,15 +51,21 @@ public class App extends Application {
         root.getChildren().add(forceRefresher);
         forceRefresher.toBack();
         
-        gates.add(new LogicGate(root, "andgate.png"));
-        gates.add(new LogicGate(root, "orgate.png"));
-        gates.add(new LogicGate(root, "norgate.png"));
-        gates.add(new LogicGate(root, "andgate.png"));
-        gates.add(new LogicGate(root, "orgate.png"));
-        gates.add(new LogicGate(root, "norgate.png"));
         //gates.get(0).setTranslateX(200.0); 
+        gates.add(new GateCard(root, GateType.AND));
+        
+        SpawnGate(GateType.AND);
+        SpawnGate(GateType.OR);
+        SpawnGate(GateType.NOT);
     }
-
+    
+//gate Spawner -MIKA --------------------------------------
+    //sets amount of inputs
+    public static void SpawnGate(GateType type) { //call to spawn gate (andgate, orgate, norgate, notgate)
+    	gates.add(new LogicGate(type));
+    }
+//-----------------------------------------------------------
+    
     public static Group getRoot() { //Public variables don't work across classes for some reason, so I use this instead
         return root;
     }

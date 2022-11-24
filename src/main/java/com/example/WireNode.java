@@ -29,8 +29,10 @@ public class WireNode extends Circle{
 
         makeWirable(root, this);
 
+        //wire drawing line
         this.wire.setFill(Color.TRANSPARENT);
         this.wire.setStroke(Color.GREEN);
+        //this.wire.setStroke(Color.GRAY);
         this.wire.setStrokeWidth(2);
         this.wire.getStrokeDashArray().addAll(5d, 5d);
         
